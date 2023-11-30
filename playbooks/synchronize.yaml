@@ -1,0 +1,9 @@
+---
+- name: Synchronize inventory
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Synchronize metal inventory
+      ansible.builtin.include_tasks: '../tasks/inventory-metal.yaml'
+  tags:
+    - inventory

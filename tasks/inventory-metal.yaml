@@ -1,0 +1,1631 @@
+- name: Create Metal Inventory
+  awx.awx.inventory:
+    name: Metal
+    description: r710 bare-metal servers
+    organization: Default
+    state: present
+- name: Create r710a.metal.lan.shamrock.systems Host
+  awx.awx.host:
+    name: r710a.metal.lan.shamrock.systems
+    description: Dell PowerEdge r710
+    inventory: Metal
+    state: present
+    variables:
+      ansible_host: 192.168.0.20
+      ansible_post: 22
+      # enp5s0f0
+      publ_gate: 192.168.0.1
+      publ_addr: 192.168.0.20
+      publ_cidr: "{{ publ_addr }}/24"
+      # enp5s0f1
+      mana_addr: 10.83.77.90
+      mana_cidr: "{{ mana_addr }}/24"
+      # eno1
+      clus_addr: 10.83.86.10
+      clus_cidr: "{{ clus_addr }}/24"
+      # eno2
+      virt_addr: 10.83.73.10
+      virt_cidr: "{{ virt_addr }}/24"
+      # eno3 eno4 (team)
+      ceph_addr: 10.83.67.10
+      ceph_cidr: "{{ ceph_addr }}/24"
+- name: Create r710b.metal.lan.shamrock.systems Host
+  awx.awx.host:
+    name: r710b.metal.lan.shamrock.systems
+    description: Dell PowerEdge r710
+    inventory: Metal
+    state: present
+    variables:
+      ansible_host: 192.168.0.21
+      ansible_port: 22
+      # enp5s0f0
+      publ_gate: 192.168.0.1
+      publ_addr: 192.168.0.21/24
+      publ_cidr: "{{ publ_addr }}/24"
+      # enp5s0f1
+      mana_addr: 10.83.77.91/24
+      mana_cidr: "{{ mana_addr }}/24"
+      # eno1
+      clus_addr: 10.83.86.11/24
+      clus_cidr: "{{ clus_addr }}/24"
+      # eno2
+      virt_addr: 10.83.73.11/24
+      virt_cidr: "{{ virt_addr }}/24"
+      # eno3 eno4 (team)
+      ceph_addr: 10.83.67.11/24
+      ceph_cidr: "{{ ceph_addr }}/24"
+- name: Create r710c.metal.lan.shamrock.systems Host
+  awx.awx.host:
+    name: r710c.metal.lan.shamrock.systems
+    description: Dell PowerEdge r710
+    inventory: Metal
+    state: present
+    variables:
+      ansible_host: 192.168.0.22
+      ansible_port: 22
+      # enp5s0f0
+      publ_gate: 192.168.0.1
+      publ_addr: 192.168.0.22/24
+      publ_cidr: "{{ publ_addr }}/24"
+      # enp5s0f1
+      mana_addr: 10.83.77.92/24
+      mana_cidr: "{{ mana_addr }}/24"
+      # eno1
+      clus_addr: 10.83.86.12/24
+      clus_cidr: "{{ clus_addr }}/24"
+      # eno2
+      virt_addr: 10.83.73.12/24
+      virt_cidr: "{{ virt_addr }}/24"
+      # eno3 eno4 (team)
+      ceph_addr: 10.83.67.12/24
+      ceph_cidr: "{{ ceph_addr }}/24"
+- name: Create r710 group
+  awx.awx.group:
+    name: r710
+    description: All Dell PowerEdge r710 units
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+      - r710b.metal.lan.shamrock.systems
+      - r710c.metal.lan.shamrock.systems
+# cephadm-ansible groups
+- name: Create Ceph admin group
+  awx.awx.group:
+    name: admin
+    description: Ceph admin group used by cephadm-ansible
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+      - r710b.metal.lan.shamrock.systems
+      - r710c.metal.lan.shamrock.systems
+# kolla-ansible groups
+## core kolla-ansible groups
+- name: Create Kolla control group
+  awx.awx.group:
+    name: control
+    description: control group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+- name: Create Kolla network group
+  awx.awx.group:
+    name: network
+    description: network group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+- name: Create Kolla compute group
+  awx.awx.group:
+    name: compute
+    description: compute group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+- name: Create Kolla storage group
+  awx.awx.group:
+    name: storage
+    description: storage group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+- name: Create Kolla monitoring group
+  awx.awx.group:
+    name: monitoring
+    description: monitoring group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+- name: Create Kolla deployment group
+  awx.awx.group:
+    name: deployment
+    description: deployment group for OpenStack Kolla
+    inventory: Metal
+    hosts:
+      - r710a.metal.lan.shamrock.systems
+# project kolla-ansible groups
+- name: Create Kolla project common group
+  awx.awx.group:
+    name: common
+    description: common group for OpenStack Kolla common project
+    inventory: Metal
+    children:
+      - control
+      - network
+      - compute
+      - storage
+      - monitoring
+- name: Create Kolla project collectd group
+  awx.awx.group:
+    name: collectd
+    description: collectd group for OpenStack Kolla collectd project
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla project baremetal group
+  awx.awx.group:
+    name: baremetal
+    description: baremetal group for OpenStack Kolla baremetal project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project tls-backend group
+  awx.awx.group:
+    name: tls-backend
+    description: tls-backend group for OpenStack Kolla tls-backend project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project grafana group
+  awx.awx.group:
+    name: grafana
+    description: grafana group for OpenStack Kolla grafana project
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla project etcd group
+  awx.awx.group:
+    name: etcd
+    description: etcd group for OpenStack Kolla etcd project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project telegraf group
+  awx.awx.group:
+    name: telegraf
+    description: telegraf group for OpenStack Kolla telegraf project
+    inventory: Metal
+    children:
+      - control
+      - network
+      - compute
+      - storage
+      - monitoring
+- name: Create Kolla project hacluster group
+  awx.awx.group:
+    name: hacluster
+    description: hacluster group for OpenStack Kolla hacluster project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project hacluster-remote group
+  awx.awx.group:
+    name: hacluster-remote
+    description: hacluster-remote group for OpenStack Kolla hacluster-remote project
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla project loadbalancer group
+  awx.awx.group:
+    name: loadbalancer
+    description: loadbalancer group for OpenStack Kolla loadbalancer project
+    inventory: Metal
+    children:
+      - network
+- name: Create Kolla project mariadb group
+  awx.awx.group:
+    name: mariadb
+    description: mariadb group for OpenStack Kolla mariadb project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project rabbitmq group
+  awx.awx.group:
+    name: rabbitmq
+    description: rabbitmq group for OpenStack Kolla rabbitmq project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project outward-rabbitmq group
+  awx.awx.group:
+    name: outward-rabbitmq
+    description: outward-rabbitmq group for OpenStack Kolla outward-rabbitmq project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project keystone group
+  awx.awx.group:
+    name: keystone
+    description: keystone group for OpenStack Kolla keystone project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project glance group
+  awx.awx.group:
+    name: glance
+    description: glance group for OpenStack Kolla glance project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project nova group
+  awx.awx.group:
+    name: nova
+    description: nova group for OpenStack Kolla nova project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project neutron group
+  awx.awx.group:
+    name: neutron
+    description: neutron group for OpenStack Kolla neutron project
+    inventory: Metal
+    children:
+      - network
+- name: Create Kolla project openvswitch group
+  awx.awx.group:
+    name: openvswitch
+    description: openvswitch group for OpenStack Kolla openvswitch project
+    inventory: Metal
+    children:
+      - network
+      - compute
+      - manila-share
+- name: Create Kolla project cinder group
+  awx.awx.group:
+    name: cinder
+    description: cinder group for OpenStack Kolla cinder project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project cloudkitty group
+  awx.awx.group:
+    name: cloudkitty
+    description: cloudkitty group for OpenStack Kolla cloudkitty project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project freezer group
+  awx.awx.group:
+    name: freezer
+    description: freezer group for OpenStack Kolla freezer project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project memcached group
+  awx.awx.group:
+    name: memcached
+    description: memcached group for OpenStack Kolla memcached project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project horizon group
+  awx.awx.group:
+    name: horizon
+    description: horizon group for OpenStack Kolla horizon project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project swift group
+  awx.awx.group:
+    name: swift
+    description: swift group for OpenStack Kolla swift project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project barbican group
+  awx.awx.group:
+    name: barbican
+    description: barbican group for OpenStack Kolla barbican project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project heat group
+  awx.awx.group:
+    name: heat
+    description: heat group for OpenStack Kolla heat project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project murano group
+  awx.awx.group:
+    name: murano
+    description: murano group for OpenStack Kolla murano project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project ironic group
+  awx.awx.group:
+    name: ironic
+    description: ironic group for OpenStack Kolla ironic project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project influxdb group
+  awx.awx.group:
+    name: influxdb
+    description: influxdb group for OpenStack Kolla influxdb project
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla project prometheus group
+  awx.awx.group:
+    name: prometheus
+    description: prometheus group for OpenStack Kolla prometheus project
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla project magnum group
+  awx.awx.group:
+    name: magnum
+    description: magnum group for OpenStack Kolla magnum project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project sahara group
+  awx.awx.group:
+    name: sahara
+    description: sahara group for OpenStack Kolla sahara project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project solum group
+  awx.awx.group:
+    name: solum
+    description: solum group for OpenStack Kolla solum project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project mistral group
+  awx.awx.group:
+    name: mistral
+    description: mistral group for OpenStack Kolla mistral project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project manila group
+  awx.awx.group:
+    name: manila
+    description: manila group for OpenStack Kolla manila project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project gnocchi group
+  awx.awx.group:
+    name: gnocchi
+    description: gnocchi group for OpenStack Kolla gnocchi project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project ceilometer group
+  awx.awx.group:
+    name: ceilometer
+    description: ceilometer group for OpenStack Kolla ceilometer project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project aodh group
+  awx.awx.group:
+    name: aodh
+    description: aodh group for OpenStack Kolla aodh project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project cyborg group
+  awx.awx.group:
+    name: cyborg
+    description: cyborg group for OpenStack Kolla cyborg project
+    inventory: Metal
+    children:
+      - control
+      - compute
+- name: Create Kolla project tacker group
+  awx.awx.group:
+    name: tacker
+    description: tacker group for OpenStack Kolla tacker project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project vitrage group
+  awx.awx.group:
+    name: vitrage
+    description: vitrage group for OpenStack Kolla vitrage project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project senlin group
+  awx.awx.group:
+    name: senlin
+    description: senlin group for OpenStack Kolla senlin project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project trove group
+  awx.awx.group:
+    name: trove
+    description: trove group for OpenStack Kolla trove project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project watcher group
+  awx.awx.group:
+    name: watcher
+    description: watcher group for OpenStack Kolla watcher project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project octavia group
+  awx.awx.group:
+    name: octavia
+    description: octavia group for OpenStack Kolla octavia project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project designate group
+  awx.awx.group:
+    name: designate
+    description: designate group for OpenStack Kolla designate project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project placement group
+  awx.awx.group:
+    name: placement
+    description: placement group for OpenStack Kolla placement project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project bifrost group
+  awx.awx.group:
+    name: bifrost
+    description: bifrost group for OpenStack Kolla bifrost project
+    inventory: Metal
+    children:
+      - deployment
+- name: Create Kolla project zun group
+  awx.awx.group:
+    name: zun
+    description: zun group for OpenStack Kolla zun project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project skyline group
+  awx.awx.group:
+    name: skyline
+    description: skyline group for OpenStack Kolla skyline project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project redis group
+  awx.awx.group:
+    name: redis
+    description: redis group for OpenStack Kolla redis project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project blazar group
+  awx.awx.group:
+    name: blazar
+    description: blazar group for OpenStack Kolla blazar project
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla project venus group
+  awx.awx.group:
+    name: venus
+    description: venus group for OpenStack Kolla venus project
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla project letsencrypt group
+  awx.awx.group:
+    name: letsencrypt
+    description: letsencrypt group for OpenStack Kolla letsencrypt project
+    inventory: Metal
+    children:
+      - loadbalancer
+## service kolla-ansible groups
+### common service kolla-ansible groups
+- name: Create Kolla common cron service group
+  awx.awx.group:
+    name: cron
+    description: cron group for OpenStack Kolla common cron
+    inventory: Metal
+    children:
+      - common
+- name: Create Kolla common fluentd service group
+  awx.awx.group:
+    name: fluentd
+    description: fluentd group for OpenStack Kolla common fluentd
+    inventory: Metal
+    children:
+      - common
+- name: Create Kolla common kolla-logs service group
+  awx.awx.group:
+    name: kolla-logs
+    description: kolla-logs group for OpenStack Kolla common kolla-logs
+    inventory: Metal
+    children:
+      - common
+- name: Create Kolla common kolla-toolbox service group
+  awx.awx.group:
+    name: kolla-toolbox
+    description: kolla-toolbox group for OpenStack Kolla common kolla-toolbox
+    inventory: Metal
+    children:
+      - common
+- name: Create Kolla common opensearch service group
+  awx.awx.group:
+    name: opensearch
+    description: opensearch group for OpenStack Kolla common opensearch
+    inventory: Metal
+    children:
+      - common
+### opensearch dashboards service kolla-ansible groups
+- name: Create Kolla opensearch-dashboards service group
+  awx.awx.group:
+    name: opensearch-dashboards
+    description: opensearch-dashboards group for OpenStack Kolla opensearch-dashboards
+    inventory: Metal
+    children:
+      - opensearch
+### glance service kolla-ansible groups
+- name: Create Kolla glance glance-api service group
+  awx.awx.group:
+    name: glance-api
+    description: glance-api group for OpenStack Kolla glance glance-api
+    inventory: Metal
+    children:
+      - glance
+### nova service kolla-ansible groups
+- name: Create Kolla nova nova-api service group
+  awx.awx.group:
+    name: nova-api
+    description: nova-api group for OpenStack Kolla nova nova-api
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-conductor service group
+  awx.awx.group:
+    name: nova-conductor
+    description: nova-conductor group for OpenStack Kolla nova nova-conductor
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-super-conductor service group
+  awx.awx.group:
+    name: nova-super-conductor
+    description: nova-super-conductor group for OpenStack Kolla nova nova-super-conductor
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-novncproxy service group
+  awx.awx.group:
+    name: nova-novncproxy
+    description: nova-novncproxy group for OpenStack Kolla nova nova-novncproxy
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-scheduler service group
+  awx.awx.group:
+    name: nova-scheduler
+    description: nova-scheduler group for OpenStack Kolla nova nova-scheduler
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-spicehtml5proxy service group
+  awx.awx.group:
+    name: nova-spicehtml5proxy
+    description: nova-spicehtml5proxy group for OpenStack Kolla nova nova-spicehtml5proxy
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-compute-ironic service group
+  awx.awx.group:
+    name: nova-compute-ironic
+    description: nova-compute-ironic group for OpenStack Kolla nova nova-compute-ironic
+    inventory: Metal
+    children:
+      - nova
+- name: Create Kolla nova nova-serialproxy service group
+  awx.awx.group:
+    name: nova-serialproxy
+    description: nova-serialproxy group for OpenStack Kolla nova nova-serialproxy
+    inventory: Metal
+    children:
+      - nova
+### neutron service kolla-ansible groups
+- name: Create Kolla neutron neutron-server service group
+  awx.awx.group:
+    name: neutron-server
+    description: neutron-server group for OpenStack Kolla neutron neutron-server
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla neutron neutron-dhcp-agent service group
+  awx.awx.group:
+    name: neutron-dhcp-agent
+    description: neutron-dhcp-agent group for OpenStack Kolla neutron neutron-dhcp-agent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron neutron-l3-agent service group
+  awx.awx.group:
+    name: neutron-l3-agent
+    description: neutron-l3-agent group for OpenStack Kolla neutron neutron-l3-agent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron neutron-metadata-agent service group
+  awx.awx.group:
+    name: neutron-metadata-agent
+    description: neutron-metadata-agent group for OpenStack Kolla neutron neutron-metadata-agent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron neutron-ovn-metadata-agent service group
+  awx.awx.group:
+    name: neutron-ovn-metadata-agent
+    description: neutron-ovn-metadata-agent group for OpenStack Kolla neutron neutron-ovn-metadata-agent
+    inventory: Metal
+    children:
+      - compute
+      - network
+- name: Create Kolla neutron neutron-ovn-agent service group
+  awx.awx.group:
+    name: neutron-ovn-agent
+    description: neutron-ovn-agent group for OpenStack Kolla neutron neutron-ovn-agent
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla neutron neutron-bgp-dragent service group
+  awx.awx.group:
+    name: neutron-bgp-dragent
+    description: neutron-bgp-dragent group for OpenStack Kolla neutron neutron-bgp-dragent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron neutron-infoblox-ipam-agent service group
+  awx.awx.group:
+    name: neutron-infoblox-ipam-agent
+    description: neutron-infoblox-ipam-agent group for OpenStack Kolla neutron neutron-infoblox-ipam-agent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron neutron-metering-agent service group
+  awx.awx.group:
+    name: neutron-metering-agent
+    description: neutron-metering-agent group for OpenStack Kolla neutron neutron-metering-agent
+    inventory: Metal
+    children:
+      - neutron
+- name: Create Kolla neutron ironic-neutron-agent service group
+  awx.awx.group:
+    name: ironic-neutron-agent
+    description: ironic-neutron-agent group for OpenStack Kolla neutron ironic-neutron-agent
+    inventory: Metal
+    children:
+      - neutron
+### cinder service kolla-ansible groups
+- name: Create Kolla cinder cinder-api service group
+  awx.awx.group:
+    name: cinder-api
+    description: cinder-api group for OpenStack Kolla cinder cinder-api
+    inventory: Metal
+    children:
+      - cinder
+- name: Create Kolla cinder cinder-backup service group
+  awx.awx.group:
+    name: cinder-backup
+    description: cinder-backup group for OpenStack Kolla cinder cinder-backup
+    inventory: Metal
+    children:
+      - storage
+- name: Create Kolla cinder cinder-scheduler service group
+  awx.awx.group:
+    name: cinder-scheduler
+    description: cinder-scheduler group for OpenStack Kolla cinder cinder-scheduler
+    inventory: Metal
+    children:
+      - cinder
+- name: Create Kolla cinder cinder-volume service group
+  awx.awx.group:
+    name: cinder-volume
+    description: cinder-volume group for OpenStack Kolla cinder cinder-volume
+    inventory: Metal
+    children:
+      - storage
+### cloudkitty service kolla-ansible groups
+- name: Create Kolla cloudkitty cloudkitty-api service group
+  awx.awx.group:
+    name: cloudkitty-api
+    description: cloudkitty-api group for OpenStack Kolla cloudkitty cloudkitty-api
+    inventory: Metal
+    children:
+      - cloudkitty
+- name: Create Kolla cloudkitty cloudkitty-processor service group
+  awx.awx.group:
+    name: cloudkitty-processor
+    description: cloudkitty-processor group for OpenStack Kolla cloudkitty cloudkitty-processor
+    inventory: Metal
+    children:
+      - cloudkitty
+### freezer service kolla-ansible groups
+- name: Create Kolla freezer freezer-api service group
+  awx.awx.group:
+    name: freezer-api
+    description: freezer-api group for OpenStack Kolla freezer freezer-api
+    inventory: Metal
+    children:
+      - freezer
+- name: Create Kolla freezer freezer-scheduler service group
+  awx.awx.group:
+    name: freezer-scheduler
+    description: freezer-scheduler group for OpenStack Kolla freezer freezer-scheduler
+    inventory: Metal
+    children:
+      - freezer
+### iSCSI service kolla-ansible groups
+- name: Create Kolla iscsi iscsid service group
+  awx.awx.group:
+    name: iscsid
+    description: iscsid group for OpenStack Kolla iscsi iscsid
+    inventory: Metal
+    children:
+      - compute
+      - storage
+      - ironic
+- name: Create Kolla iscsi tgtd service group
+  awx.awx.group:
+    name: tgtd
+    description: tgtd group for OpenStack Kolla iscsi tgtd
+    inventory: Metal
+    children:
+      - storage
+### manila service kolla-ansible groups
+- name: Create Kolla manila manila-api service group
+  awx.awx.group:
+    name: manila-api
+    description: manila-api group for OpenStack Kolla manila manila-api
+    inventory: Metal
+    children:
+      - manila
+- name: Create Kolla manila manila-scheduler service group
+  awx.awx.group:
+    name: manila-scheduler
+    description: manila-scheduler group for OpenStack Kolla manila manila-scheduler
+    inventory: Metal
+    children:
+      - manila
+- name: Create Kolla manila manila-share service group
+  awx.awx.group:
+    name: manila-share
+    description: manila-share group for OpenStack Kolla manila manila-share
+    inventory: Metal
+    children:
+      - network
+- name: Create Kolla manila manila-data service group
+  awx.awx.group:
+    name: manila-data
+    description: manila-data group for OpenStack Kolla manila manila-data
+    inventory: Metal
+    children:
+      - manila
+### swift service kolla-ansible groups
+- name: Create Kolla swift swift-proxy-server service group
+  awx.awx.group:
+    name: swift-proxy-server
+    description: swift-proxy-server group for OpenStack Kolla swift swift-proxy-server
+    inventory: Metal
+    children:
+      - swift
+- name: Create Kolla swift swift-account-server service group
+  awx.awx.group:
+    name: swift-account-server
+    description: swift-account-server group for OpenStack Kolla swift swift-account-server
+    inventory: Metal
+    children:
+      - storage
+- name: Create Kolla swift swift-container-server service group
+  awx.awx.group:
+    name: swift-container-server
+    description: swift-container-server group for OpenStack Kolla swift swift-container-server
+    inventory: Metal
+    children:
+      - storage
+- name: Create Kolla swift swift-object-server service group
+  awx.awx.group:
+    name: swift-object-server
+    description: swift-object-server group for OpenStack Kolla swift swift-object-server
+    inventory: Metal
+    children:
+      - storage
+### barbican service kolla-ansible groups
+- name: Create Kolla barbican barbican-api service group
+  awx.awx.group:
+    name: barbican-api
+    description: barbican-api group for OpenStack Kolla barbican barbican-api
+    inventory: Metal
+    children:
+      - barbican
+- name: Create Kolla barbican barbican-keystone-listener service group
+  awx.awx.group:
+    name: barbican-keystone-listener
+    description: barbican-keystone-listener group for OpenStack Kolla barbican barbican-keystone-listener
+    inventory: Metal
+    children:
+      - barbican
+- name: Create Kolla barbican barbican-worker service group
+  awx.awx.group:
+    name: barbican-worker
+    description: barbican-worker group for OpenStack Kolla barbican barbican-worker
+    inventory: Metal
+    children:
+      - barbican
+### trove service kolla-ansible groups
+- name: Create Kolla trove trove-api service group
+  awx.awx.group:
+    name: trove-api
+    description: trove-api group for OpenStack Kolla trove trove-api
+    inventory: Metal
+    children:
+      - trove
+- name: Create Kolla trove trove-conductor service group
+  awx.awx.group:
+    name: trove-conductor
+    description: trove-conductor group for OpenStack Kolla trove trove-conductor
+    inventory: Metal
+    children:
+      - trove
+- name: Create Kolla trove trove-taskmanager service group
+  awx.awx.group:
+    name: trove-taskmanager
+    description: trove-taskmanager group for OpenStack Kolla trove trove-taskmanager
+    inventory: Metal
+    children:
+      - trove
+### heat service kolla-ansible groups
+- name: Create Kolla heat heat-api service group
+  awx.awx.group:
+    name: heat-api
+    description: heat-api group for OpenStack Kolla heat heat-api
+    inventory: Metal
+    children:
+      - heat
+- name: Create Kolla heat heat-api-cfn service group
+  awx.awx.group:
+    name: heat-api-cfn
+    description: heat-api-cfn group for OpenStack Kolla heat heat-api-cfn
+    inventory: Metal
+    children:
+      - heat
+- name: Create Kolla heat heat-engine service group
+  awx.awx.group:
+    name: heat-engine
+    description: heat-engine group for OpenStack Kolla heat heat-engine
+    inventory: Metal
+    children:
+      - heat
+### murano service kolla-ansible groups
+- name: Create Kolla murano murano-api service group
+  awx.awx.group:
+    name: murano-api
+    description: murano-api group for OpenStack Kolla murano murano-api
+    inventory: Metal
+    children:
+      - murano
+- name: Create Kolla murano murano-engine service group
+  awx.awx.group:
+    name: murano-engine
+    description: murano-engine group for OpenStack Kolla murano murano-engine
+    inventory: Metal
+    children:
+      - murano
+### ironic service kolla-ansible groups
+- name: Create Kolla ironic ironic-api service group
+  awx.awx.group:
+    name: ironic-api
+    description: ironic-api group for OpenStack Kolla ironic ironic-api
+    inventory: Metal
+    children:
+      - ironic
+- name: Create Kolla ironic ironic-conductor service group
+  awx.awx.group:
+    name: ironic-conductor
+    description: ironic-conductor group for OpenStack Kolla ironic ironic-conductor
+    inventory: Metal
+    children:
+      - ironic
+- name: Create Kolla ironic ironic-inspector service group
+  awx.awx.group:
+    name: ironic-inspector
+    description: ironic-inspector group for OpenStack Kolla ironic ironic-inspector
+    inventory: Metal
+    children:
+      - ironic
+- name: Create Kolla ironic ironic-tftp service group
+  awx.awx.group:
+    name: ironic-tftp
+    description: ironic-tftp group for OpenStack Kolla ironic ironic-tftp
+    inventory: Metal
+    children:
+      - ironic
+- name: Create Kolla ironic ironic-http service group
+  awx.awx.group:
+    name: ironic-http
+    description: ironic-http group for OpenStack Kolla ironic ironic-http
+    inventory: Metal
+    children:
+      - ironic
+### magnum service kolla-ansible groups
+- name: Create Kolla magnum magnum-api service group
+  awx.awx.group:
+    name: magnum-api
+    description: magnum-api group for OpenStack Kolla magnum magnum-api
+    inventory: Metal
+    children:
+      - magnum
+- name: Create Kolla magnum magnum-conductor service group
+  awx.awx.group:
+    name: magnum-conductor
+    description: magnum-conductor group for OpenStack Kolla magnum magnum-conductor
+    inventory: Metal
+    children:
+      - magnum
+### solum service kolla-ansible groups
+- name: Create Kolla solum solum-api service group
+  awx.awx.group:
+    name: solum-api
+    description: solum-api group for OpenStack Kolla solum solum-api
+    inventory: Metal
+    children:
+      - solum
+- name: Create Kolla solum solum-worker service group
+  awx.awx.group:
+    name: solum-worker
+    description: solum-worker group for OpenStack Kolla solum solum-worker
+    inventory: Metal
+    children:
+      - solum
+- name: Create Kolla solum solum-deployer service group
+  awx.awx.group:
+    name: solum-deployer
+    description: solum-deployer group for OpenStack Kolla solum solum-deployer
+    inventory: Metal
+    children:
+      - solum
+- name: Create Kolla solum solum-conductor service group
+  awx.awx.group:
+    name: solum-conductor
+    description: solum-conductor group for OpenStack Kolla solum solum-conductor
+    inventory: Metal
+    children:
+      - solum
+- name: Create Kolla solum solum-application-deployment service group
+  awx.awx.group:
+    name: solum-application-deployment
+    description: solum-application-deployment group for OpenStack Kolla solum solum-application-deployment
+    inventory: Metal
+    children:
+      - solum
+- name: Create Kolla solum solum-image-builder service group
+  awx.awx.group:
+    name: solum-image-builder
+    description: solum-image-builder group for OpenStack Kolla solum solum-image-builder
+    inventory: Metal
+    children:
+      - solum
+### mistral service kolla-ansible groups
+- name: Create Kolla mistral mistral-api service group
+  awx.awx.group:
+    name: mistral-api
+    description: mistral-api group for OpenStack Kolla mistral mistral-api
+    inventory: Metal
+    children:
+      - mistral
+- name: Create Kolla mistral mistral-executor service group
+  awx.awx.group:
+    name: mistral-executor
+    description: mistral-executor group for OpenStack Kolla mistral mistral-executor
+    inventory: Metal
+    children:
+      - mistral
+- name: Create Kolla mistral mistral-engine service group
+  awx.awx.group:
+    name: mistral-engine
+    description: mistral-engine group for OpenStack Kolla mistral mistral-engine
+    inventory: Metal
+    children:
+      - mistral
+- name: Create Kolla mistral mistral-event-engine service group
+  awx.awx.group:
+    name: mistral-event-engine
+    description: mistral-event-engine group for OpenStack Kolla mistral mistral-event-engine
+    inventory: Metal
+    children:
+      - mistral
+### aodh service kolla-ansible groups
+- name: Create Kolla aodh aodh-api service group
+  awx.awx.group:
+    name: aodh-api
+    description: aodh-api group for OpenStack Kolla aodh aodh-api
+    inventory: Metal
+    children:
+      - aodh
+- name: Create Kolla aodh aodh-evaluator service group
+  awx.awx.group:
+    name: aodh-evaluator
+    description: aodh-evaluator group for OpenStack Kolla aodh aodh-evaluator
+    inventory: Metal
+    children:
+      - aodh
+- name: Create Kolla aodh aodh-listener service group
+  awx.awx.group:
+    name: aodh-listener
+    description: aodh-listener group for OpenStack Kolla aodh aodh-listener
+    inventory: Metal
+    children:
+      - aodh
+- name: Create Kolla aodh aodh-notifier service group
+  awx.awx.group:
+    name: aodh-notifier
+    description: aodh-notifier group for OpenStack Kolla aodh aodh-notifier
+    inventory: Metal
+    children:
+      - aodh
+### cyborg service kolla-ansible groups
+- name: Create Kolla cyborg cyborg-api service group
+  awx.awx.group:
+    name: cyborg-api
+    description: cyborg-api group for OpenStack Kolla cyborg cyborg-api
+    inventory: Metal
+    children:
+      - cyborg
+- name: Create Kolla compute cyborg-agent service group
+  awx.awx.group:
+    name: cyborg-agent
+    description: cyborg-agent group for OpenStack Kolla compute cyborg-agent
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla cyborg cyborg-conductor service group
+  awx.awx.group:
+    name: cyborg-conductor
+    description: cyborg-conductor group for OpenStack Kolla cyborg cyborg-conductor
+    inventory: Metal
+    children:
+      - cyborg
+### gnocchi service kolla-ansible groups
+- name: Create Kolla gnocchi gnocchi-api service group
+  awx.awx.group:
+    name: gnocchi-api
+    description: gnocchi-api group for OpenStack Kolla gnocchi gnocchi-api
+    inventory: Metal
+    children:
+      - gnocchi
+- name: Create Kolla gnocchi gnocchi-statsd service group
+  awx.awx.group:
+    name: gnocchi-statsd
+    description: gnocchi-statsd group for OpenStack Kolla gnocchi gnocchi-statsd
+    inventory: Metal
+    children:
+      - gnocchi
+- name: Create Kolla gnocchi gnocchi-metricd service group
+  awx.awx.group:
+    name: gnocchi-metricd
+    description: gnocchi-metricd group for OpenStack Kolla gnocchi gnocchi-metricd
+    inventory: Metal
+    children:
+      - gnocchi
+### sahara service kolla-ansible groups
+- name: Create Kolla sahara sahara-api service group
+  awx.awx.group:
+    name: sahara-api
+    description: sahara-api group for OpenStack Kolla sahara sahara-api
+    inventory: Metal
+    children:
+      - sahara
+- name: Create Kolla sahara sahara-engine service group
+  awx.awx.group:
+    name: sahara-engine
+    description: sahara-engine group for OpenStack Kolla sahara sahara-engine
+    inventory: Metal
+    children:
+      - sahara
+### ceilometer service kolla-ansible groups
+- name: Create Kolla ceilometer ceilometer-central service group
+  awx.awx.group:
+    name: ceilometer-central
+    description: ceilometer-central group for OpenStack Kolla ceilometer ceilometer-central
+    inventory: Metal
+    children:
+      - ceilometer
+- name: Create Kolla ceilometer ceilometer-notification service group
+  awx.awx.group:
+    name: ceilometer-notification
+    description: ceilometer-notification group for OpenStack Kolla ceilometer ceilometer-notification
+    inventory: Metal
+    children:
+      - ceilometer
+- name: Create Kolla ceilometer ceilometer-compute service group
+  awx.awx.group:
+    name: ceilometer-compute
+    description: ceilometer-compute group for OpenStack Kolla ceilometer ceilometer-compute
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla ceilometer ceilometer-ipmi service group
+  awx.awx.group:
+    name: ceilometer-ipmi
+    description: ceilometer-ipmi group for OpenStack Kolla ceilometer ceilometer-ipmi
+    inventory: Metal
+    children:
+      - compute
+### multipathd service kolla-ansible groups
+- name: Create Kolla compute multipathd service group
+  awx.awx.group:
+    name: multipathd
+    description: multipathd group for OpenStack Kolla multipathd
+    inventory: Metal
+    children:
+      - compute
+      - storage
+### watcher service kolla-ansible groups
+- name: Create Kolla watcher watcher-api service group
+  awx.awx.group:
+    name: watcher-api
+    description: watcher-api group for OpenStack Kolla watcher watcher-api
+    inventory: Metal
+    children:
+      - watcher
+- name: Create Kolla watcher watcher-engine service group
+  awx.awx.group:
+    name: watcher-engine
+    description: watcher-engine group for OpenStack Kolla watcher watcher-engine
+    inventory: Metal
+    children:
+      - watcher
+- name: Create Kolla watcher watcher-applier service group
+  awx.awx.group:
+    name: watcher-applier
+    description: watcher-applier group for OpenStack Kolla watcher watcher-applier
+    inventory: Metal
+    children:
+      - watcher
+### senlin service kolla-ansible groups
+- name: Create Kolla senlin senlin-api service group
+  awx.awx.group:
+    name: senlin-api
+    description: senlin-api group for OpenStack Kolla senlin senlin-api
+    inventory: Metal
+    children:
+      - senlin
+- name: Create Kolla senlin senlin-conductor service group
+  awx.awx.group:
+    name: senlin-conductor
+    description: senlin-conductor group for OpenStack Kolla senlin senlin-conductor
+    inventory: Metal
+    children:
+      - senlin
+- name: Create Kolla senlin senlin-engine service group
+  awx.awx.group:
+    name: senlin-engine
+    description: senlin-engine group for OpenStack Kolla senlin senlin-engine
+    inventory: Metal
+    children:
+      - senlin
+- name: Create Kolla senlin senlin-health-manager service group
+  awx.awx.group:
+    name: senlin-health-manager
+    description: senlin-health-manager group for OpenStack Kolla senlin senlin-health-manager
+    inventory: Metal
+    children:
+      - senlin
+### octavia service kolla-ansible groups
+- name: Create Kolla octavia octavia-api service group
+  awx.awx.group:
+    name: octavia-api
+    description: octavia-api group for OpenStack Kolla octavia octavia-api
+    inventory: Metal
+    children:
+      - octavia
+- name: Create Kolla octavia octavia-driver-agent service group
+  awx.awx.group:
+    name: octavia-driver-agent
+    description: octavia-driver-agent group for OpenStack Kolla octavia octavia-driver-agent
+    inventory: Metal
+    children:
+      - octavia
+- name: Create Kolla octavia octavia-health-manager service group
+  awx.awx.group:
+    name: octavia-health-manager
+    description: octavia-health-manager group for OpenStack Kolla octavia octavia-health-manager
+    inventory: Metal
+    children:
+      - octavia
+- name: Create Kolla octavia octavia-housekeeping service group
+  awx.awx.group:
+    name: octavia-housekeeping
+    description: octavia-housekeeping group for OpenStack Kolla octavia octavia-housekeeping
+    inventory: Metal
+    children:
+      - octavia
+- name: Create Kolla octavia octavia-worker service group
+  awx.awx.group:
+    name: octavia-worker
+    description: octavia-worker group for OpenStack Kolla octavia octavia-worker
+    inventory: Metal
+    children:
+      - octavia
+### designate service kolla-ansible groups
+- name: Create Kolla designate designate-api service group
+  awx.awx.group:
+    name: designate-api
+    description: designate-api group for OpenStack Kolla designate designate-api
+    inventory: Metal
+    children:
+      - designate
+- name: Create Kolla designate designate-central service group
+  awx.awx.group:
+    name: designate-central
+    description: designate-central group for OpenStack Kolla designate designate-central
+    inventory: Metal
+    children:
+      - designate
+- name: Create Kolla designate designate-producer service group
+  awx.awx.group:
+    name: designate-producer
+    description: designate-producer group for OpenStack Kolla designate designate-producer
+    inventory: Metal
+    children:
+      - designate
+- name: Create Kolla designate designate-mdns service group
+  awx.awx.group:
+    name: designate-mdns
+    description: designate-mdns group for OpenStack Kolla designate designate-mdns
+    inventory: Metal
+    children:
+      - network
+- name: Create Kolla designate designate-worker service group
+  awx.awx.group:
+    name: designate-worker
+    description: designate-worker group for OpenStack Kolla designate designate-worker
+    inventory: Metal
+    children:
+      - designate
+- name: Create Kolla designate designate-sink service group
+  awx.awx.group:
+    name: designate-sink
+    description: designate-sink group for OpenStack Kolla designate designate-sink
+    inventory: Metal
+    children:
+      - designate
+- name: Create Kolla designate designate-backend-bind9 service group
+  awx.awx.group:
+    name: designate-backend-bind9
+    description: designate-backend-bind9 group for OpenStack Kolla designate designate-backend-bind9
+    inventory: Metal
+    children:
+      - designate
+### placement service kolla-ansible groups
+- name: Create Kolla placement placement-api service group
+  awx.awx.group:
+    name: placement-api
+    description: placement-api group for OpenStack Kolla placement placement-api
+    inventory: Metal
+    children:
+      - placement
+### zun service kolla-ansible groups
+- name: Create Kolla zun zun-api service group
+  awx.awx.group:
+    name: zun-api
+    description: zun-api group for OpenStack Kolla zun zun-api
+    inventory: Metal
+    children:
+      - zun
+- name: Create Kolla zun zun-wsproxy service group
+  awx.awx.group:
+    name: zun-wsproxy
+    description: zun-wsproxy group for OpenStack Kolla zun zun-wsproxy
+    inventory: Metal
+    children:
+      - zun
+- name: Create Kolla zun zun-compute service group
+  awx.awx.group:
+    name: zun-compute
+    description: zun-compute group for OpenStack Kolla zun zun-compute
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla zun zun-cni-daemon service group
+  awx.awx.group:
+    name: zun-cni-daemon
+    description: zun-cni-daemon group for OpenStack Kolla zun zun-cni-daemon
+    inventory: Metal
+    children:
+      - compute
+### skyline service kolla-ansible groups
+- name: Create Kolla skyline skyline-apiserver service group
+  awx.awx.group:
+    name: skyline-apiserver
+    description: skyline-apiserver group for OpenStack Kolla skyline skyline-apiserver
+    inventory: Metal
+    children:
+      - skyline
+- name: Create Kolla skyline skyline-console service group
+  awx.awx.group:
+    name: skyline-console
+    description: skyline-console group for OpenStack Kolla skyline skyline-console
+    inventory: Metal
+    children:
+      - skyline
+### tacker service kolla-ansible groups
+- name: Create Kolla tacker tacker-server service group
+  awx.awx.group:
+    name: tacker-server
+    description: tacker-server group for OpenStack Kolla tacker tacker-server
+    inventory: Metal
+    children:
+      - tacker
+- name: Create Kolla tacker tacker-conductor service group
+  awx.awx.group:
+    name: tacker-conductor
+    description: tacker-conductor group for OpenStack Kolla tacker tacker-conductor
+    inventory: Metal
+    children:
+      - tacker
+### vitrage service kolla-ansible groups
+- name: Create Kolla vitrage vitrage-api service group
+  awx.awx.group:
+    name: vitrage-api
+    description: vitrage-api group for OpenStack Kolla vitrage vitrage-api
+    inventory: Metal
+    children:
+      - vitrage
+- name: Create Kolla vitrage vitrage-notifier service group
+  awx.awx.group:
+    name: vitrage-notifier
+    description: vitrage-notifier group for OpenStack Kolla vitrage vitrage-notifier
+    inventory: Metal
+    children:
+      - vitrage
+- name: Create Kolla vitrage vitrage-graph service group
+  awx.awx.group:
+    name: vitrage-graph
+    description: vitrage-graph group for OpenStack Kolla vitrage vitrage-graph
+    inventory: Metal
+    children:
+      - vitrage
+- name: Create Kolla vitrage vitrage-ml service group
+  awx.awx.group:
+    name: vitrage-ml
+    description: vitrage-ml group for OpenStack Kolla vitrage vitrage-ml
+    inventory: Metal
+    children:
+      - vitrage
+- name: Create Kolla vitrage vitrage-persistor service group
+  awx.awx.group:
+    name: vitrage-persistor
+    description: vitrage-persistor group for OpenStack Kolla vitrage vitrage-persistor
+    inventory: Metal
+    children:
+      - vitrage
+### blazar service kolla-ansible groups
+- name: Create Kolla blazar blazar-api service group
+  awx.awx.group:
+    name: blazar-api
+    description: blazar-api group for OpenStack Kolla blazar blazar-api
+    inventory: Metal
+    children:
+      - blazar
+- name: Create Kolla blazar blazar-manager service group
+  awx.awx.group:
+    name: blazar-manager
+    description: blazar-manager group for OpenStack Kolla blazar blazar-manager
+    inventory: Metal
+    children:
+      - blazar
+### prometheus service kolla-ansible groups
+- name: Create Kolla prometheus prometheus-node-exporter service group
+  awx.awx.group:
+    name: prometheus-node-exporter
+    description: prometheus-node-exporter group for OpenStack Kolla prometheus prometheus-node-exporter
+    inventory: Metal
+    children:
+      - monitoring
+      - control
+      - compute
+      - network
+      - storage
+- name: Create Kolla prometheus prometheus-mysqld-exporter service group
+  awx.awx.group:
+    name: prometheus-mysqld-exporter
+    description: prometheus-mysqld-exporter group for OpenStack Kolla prometheus prometheus-mysqld-exporter
+    inventory: Metal
+    children:
+      - mariadb
+- name: Create Kolla prometheus prometheus-haproxy-exporter service group
+  awx.awx.group:
+    name: prometheus-haproxy-exporter
+    description: prometheus-haproxy-exporter group for OpenStack Kolla prometheus prometheus-haproxy-exporter
+    inventory: Metal
+    children:
+      - loadbalancer
+- name: Create Kolla prometheus prometheus-memcached-exporter service group
+  awx.awx.group:
+    name: prometheus-memcached-exporter
+    description: prometheus-memcached-exporter group for OpenStack Kolla prometheus prometheus-memcached-exporter
+    inventory: Metal
+    children:
+      - memcached
+- name: Create Kolla prometheus prometheus-cadvisor service group
+  awx.awx.group:
+    name: prometheus-cadvisor
+    description: prometheus-cadvisor group for OpenStack Kolla prometheus prometheus-cadvisor
+    inventory: Metal
+    children:
+      - monitoring
+      - control
+      - compute
+      - network
+      - storage
+- name: Create Kolla prometheus prometheus-alertmanager service group
+  awx.awx.group:
+    name: prometheus-alertmanager
+    description: prometheus-alertmanager group for OpenStack Kolla prometheus prometheus-alertmanager
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla prometheus prometheus-openstack-exporter service group
+  awx.awx.group:
+    name: prometheus-openstack-exporter
+    description: prometheus-openstack-exporter group for OpenStack Kolla prometheus prometheus-openstack-exporter
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla prometheus prometheus-elasticsearch-exporter service group
+  awx.awx.group:
+    name: prometheus-elasticsearch-exporter
+    description: prometheus-elasticsearch-exporter group for OpenStack Kolla prometheus prometheus-elasticsearch-exporter
+    inventory: Metal
+    children:
+      - opensearch
+- name: Create Kolla prometheus prometheus-blackbox-exporter service group
+  awx.awx.group:
+    name: prometheus-blackbox-exporter
+    description: prometheus-blackbox-exporter group for OpenStack Kolla prometheus prometheus-blackbox-exporter
+    inventory: Metal
+    children:
+      - monitoring
+- name: Create Kolla prometheus prometheus-libvirt-exporter service group
+  awx.awx.group:
+    name: prometheus-libvirt-exporter
+    description: prometheus-libvirt-exporter group for OpenStack Kolla prometheus prometheus-libvirt-exporter
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla prometheus prometheus-msteams service group
+  awx.awx.group:
+    name: prometheus-msteams
+    description: prometheus-msteams group for OpenStack Kolla prometheus prometheus-msteams
+    inventory: Metal
+    children:
+      - prometheus-alertmanager
+### masakari service kolla-ansible groups
+- name: Create Kolla masakari masakari-api service group
+  awx.awx.group:
+    name: masakari-api
+    description: masakari-api group for OpenStack Kolla masakari masakari-api
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla masakari masakari-engine service group
+  awx.awx.group:
+    name: masakari-engine
+    description: masakari-engine group for OpenStack Kolla masakari masakari-engine
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla masakari masakari-hostmonitor service group
+  awx.awx.group:
+    name: masakari-hostmonitor
+    description: masakari-hostmonitor group for OpenStack Kolla masakari masakari-hostmonitor
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla masakari masakari-instancemonitor service group
+  awx.awx.group:
+    name: masakari-instancemonitor
+    description: masakari-instancemonitor group for OpenStack Kolla masakari masakari-instancemonitor
+    inventory: Metal
+    children:
+      - compute
+### ovn service kolla-ansible groups
+- name: Create Kolla ovn ovn-controller service group
+  awx.awx.group:
+    name: ovn-controller
+    description: ovn-controller group for OpenStack Kolla ovn ovn-controller
+    inventory: Metal
+    children:
+      - ovn-controller-compute
+      - ovn-controller-network
+- name: Create Kolla ovn ovn-controller-compute service group
+  awx.awx.group:
+    name: ovn-controller-compute
+    description: ovn-controller-compute group for OpenStack Kolla ovn ovn-controller-compute
+    inventory: Metal
+    children:
+      - compute
+- name: Create Kolla ovn ovn-controller-network service group
+  awx.awx.group:
+    name: ovn-controller-network
+    description: ovn-controller-network group for OpenStack Kolla ovn ovn-controller-network
+    inventory: Metal
+    children:
+      - network
+- name: Create Kolla ovn ovn-database service group
+  awx.awx.group:
+    name: ovn-database
+    description: ovn-database group for OpenStack Kolla ovn ovn-database
+    inventory: Metal
+    children:
+      - control
+- name: Create Kolla ovn ovn-northd service group
+  awx.awx.group:
+    name: ovn-northd
+    description: ovn-northd group for OpenStack Kolla ovn ovn-northd
+    inventory: Metal
+    children:
+      - ovn-database
+- name: Create Kolla ovn ovn-nb-db service group
+  awx.awx.group:
+    name: ovn-nb-db
+    description: ovn-nb-db group for OpenStack Kolla ovn ovn-nb-db
+    inventory: Metal
+    children:
+      - ovn-database
+- name: Create Kolla ovn ovn-sb-db service group
+  awx.awx.group:
+    name: ovn-sb-db
+    description: ovn-sb-db group for OpenStack Kolla ovn ovn-sb-db
+    inventory: Metal
+    children:
+      - ovn-database
+### venus service kolla-ansible groups
+- name: Create Kolla venus venus-api service group
+  awx.awx.group:
+    name: venus-api
+    description: venus-api group for OpenStack Kolla venus venus-api
+    inventory: Metal
+    children:
+      - venus
+- name: Create Kolla venus venus-manager service group
+  awx.awx.group:
+    name: venus-manager
+    description: venus-manager group for OpenStack Kolla venus venus-manager
+    inventory: Metal
+    children:
+      - venus
+### letsencrypt service kolla-ansible groups
+- name: Create Kolla letsencrypt letsencrypt-webserver service group
+  awx.awx.group:
+    name: letsencrypt-webserver
+    description: letsencrypt-webserver group for OpenStack Kolla letsencrypt letsencrypt-webserver
+    inventory: Metal
+    children:
+      - letsencrypt
+- name: Create Kolla letsencrypt letsencrypt-lego service group
+  awx.awx.group:
+    name: letsencrypt-lego
+    description: letsencrypt-lego group for OpenStack Kolla letsencrypt letsencrypt-lego
+    inventory: Metal
+    children:
+      - letsencrypt

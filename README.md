@@ -1,0 +1,1 @@
+This AWX project contains certain AWX resources in playbook form to make configuration easier
